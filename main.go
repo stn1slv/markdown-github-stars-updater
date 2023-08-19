@@ -108,9 +108,9 @@ func formatStarCount(stars int) string {
 }
 
 func getAccessToken() string {
-	token := os.Getenv("GITHUB_ACCESS_TOKEN")
+	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		fmt.Println("Error: GITHUB_ACCESS_TOKEN environment variable not set")
+		fmt.Println("Error: GITHUB_TOKEN environment variable not set")
 		os.Exit(1)
 	}
 	return token

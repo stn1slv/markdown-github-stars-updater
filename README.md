@@ -28,7 +28,7 @@ This program utilizes the GitHub API to fetch star counts for GitHub repositorie
 ## Requirements
 - Go programming language (https://golang.org/dl/)
 ## Configuration
-To use this program, you need to provide your GitHub access token for API requests. Set the GITHUB_ACCESS_TOKEN environment variable before running the program.
+To use this program, you need to provide your GitHub access token for API requests. Set the GITHUB_TOKEN environment variable before running the program.
 
 ## License
 This project is licensed under the MIT License. See LICENSE for more information.
