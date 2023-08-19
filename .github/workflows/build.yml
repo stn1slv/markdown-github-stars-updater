@@ -25,7 +25,7 @@ jobs:
     #     run: go test -v ./...
         
       - name: Build for Linux
-        run: go build -v -o github-markdown-stars-updater-linux-amd64
+        run: go build -v -o markdown-github-stars-updater-linux-amd64
         env:
           GOOS: linux
           GOARCH: amd64
@@ -33,7 +33,7 @@ jobs:
           GO111MODULE: on
       
       - name: Build for Windows
-        run: go build -v -o github-markdown-stars-updater-windows-amd64.exe
+        run: go build -v -o markdown-github-stars-updater-windows-amd64.exe
         env:
           GOOS: windows
           GOARCH: amd64
@@ -41,7 +41,7 @@ jobs:
           GO111MODULE: on
             
       - name: Build for MacOS (AMD64)
-        run: go build -v -o github-markdown-stars-updater-darwin-amd64
+        run: go build -v -o markdown-github-stars-updater-darwin-amd64
         env:
           GOOS: darwin
           GOARCH: amd64
@@ -49,7 +49,7 @@ jobs:
           GO111MODULE: on
       
       - name: Build for MacOS (ARM64)
-        run: go build -v -o github-markdown-stars-updater-darwin-arm64
+        run: go build -v -o markdown-github-stars-updater-darwin-arm64
         env:
           GOOS: darwin
           GOARCH: arm64
@@ -74,8 +74,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./github-markdown-stars-updater-linux-amd64
-          asset_name: github-markdown-stars-updater-linux-amd64
+          asset_path: ./markdown-github-stars-updater-linux-amd64
+          asset_name: markdown-github-stars-updater-linux-amd64
           asset_content_type: application/octet-stream
 
       - name: Upload Release Asset for Windows
@@ -85,8 +85,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./github-markdown-stars-updater-windows-amd64.exe
-          asset_name: github-markdown-stars-updater-windows-amd64.exe
+          asset_path: ./markdown-github-stars-updater-windows-amd64.exe
+          asset_name: markdown-github-stars-updater-windows-amd64.exe
           asset_content_type: application/octet-stream
       
       - name: Upload Release Asset for MacOS (AMD64)
@@ -96,8 +96,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./github-markdown-stars-updater-darwin-amd64
-          asset_name: github-markdown-stars-updater-darwin-amd64
+          asset_path: ./markdown-github-stars-updater-darwin-amd64
+          asset_name: markdown-github-stars-updater-darwin-amd64
           asset_content_type: application/octet-stream
 
       - name: Upload Release Asset for MacOS (ARM64)
@@ -107,6 +107,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./github-markdown-stars-updater-darwin-arm64
-          asset_name: github-markdown-stars-updater-darwin-arm64
+          asset_path: ./markdown-github-stars-updater-darwin-arm64
+          asset_name: markdown-github-stars-updater-darwin-arm64
           asset_content_type: application/octet-stream
