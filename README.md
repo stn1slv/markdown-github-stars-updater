@@ -1,4 +1,4 @@
-# Markdown Stars Adder
+# Markdown Stars Updater
 
 This is a Go program that reads a Markdown file containing GitHub repository links and updates the links with information about star counts.
 
