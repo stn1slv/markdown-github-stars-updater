@@ -21,8 +21,8 @@ jobs:
       - name: Get dependencies
         run: go get -v -t -d ./...
       
-    #   - name: Test
-    #     run: go test -v ./...
+      - name: Test
+        run: go test -v ./...
         
       - name: Build for Linux (AMD64)
         run: go build -v -o markdown-github-stars-updater-linux-amd64
