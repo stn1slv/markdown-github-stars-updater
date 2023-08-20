@@ -24,14 +24,22 @@ jobs:
     #   - name: Test
     #     run: go test -v ./...
         
-      - name: Build for Linux
+      - name: Build for Linux (AMD64)
         run: go build -v -o markdown-github-stars-updater-linux-amd64
         env:
           GOOS: linux
           GOARCH: amd64
           CGO_ENABLED: 0
           GO111MODULE: on
-      
+
+      - name: Build for Linux (ARM64)
+        run: go build -v -o markdown-github-stars-updater-linux-arm64
+        env:
+          GOOS: linux
+          GOARCH: arm64
+          CGO_ENABLED: 0
+          GO111MODULE: on
+    
       - name: Build for Windows
         run: go build -v -o markdown-github-stars-updater-windows-amd64.exe
         env:
@@ -67,8 +75,8 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset for Linux
-        id: upload-release-asset-linux
+      - name: Upload Release Asset for Linux (AMD64)
+        id: upload-release-asset-linux-amd64
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,6 +84,17 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./markdown-github-stars-updater-linux-amd64
           asset_name: markdown-github-stars-updater-linux-amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Release Asset for Linux (ARM64)
+        id: upload-release-asset-linux-arm64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./markdown-github-stars-updater-linux-arm64
+          asset_name: markdown-github-stars-updater-linux-arm64
           asset_content_type: application/octet-stream
 
       - name: Upload Release Asset for Windows
