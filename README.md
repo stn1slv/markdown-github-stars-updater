@@ -1,6 +1,12 @@
 # Markdown GitHub Stars Updater
 
-This is a Go program that reads a Markdown file containing GitHub repository links and updates the links with information about star counts.
+This is a Go program that reads a Markdown file containing GitHub repository links and updates the links with information about star counts. For example:
+>
+>- [APITree](https://www.apitree.com/) - A tool for managing and sharing API specifications, with version control, API testing automation, and integration with popular API tools.
+>- [DapperDox (⭐377)](https://github.com/DapperDox/dapperdox) - An open-source API documentation generator and server for OpenAPI/Swagger specifications, with customizable documentation, automated updates, and easy sharing.
+>- [OpenAPI Explorer (⭐213)](https://github.com/Rhosys/openapi-explorer) - A tool for generating user interfaces from OpenAPI specifications, making it easier for software engineers to visualize and interact with APIs.
+>- [RapiDoc (⭐1.3k)](https://github.com/rapi-doc/RapiDoc) - A tool that generates customizable, interactive API documentation from OpenAPI Specification, with a range of design options.
+>- [Redoc (⭐20k)](https://github.com/Redocly/redoc) - An open-source tool for generating documentation from OpenAPI (fka Swagger) definitions, with customizable themes, language support, and branding.
 
 ## Usage
 The program will update the label links in Markdown file with star counts for each repository link.
