@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math"
 	"os"
 	"regexp"
 	"strings"
@@ -57,7 +56,7 @@ func updateStarCounts(markdownContent string) (string, error) {
 		}
 
 		// Update star count in the link title
-		updatedLink := fmt.Sprintf("[%s (⭐%s)](%s)", removeStars(itemName), formatStarCount(starCount), repoURL)
+		updatedLink := fmt.Sprintf("[%s (⭐%s)](%s)", removeStarsInfo(itemName), formatStarCount(starCount), repoURL)
 		markdownContent = strings.Replace(markdownContent, match[0], updatedLink, 1)
 	}
 
@@ -90,7 +89,7 @@ func parseRepoName(repoName string) (string, string) {
 	return parts[0], parts[1]
 }
 
-func removeStars(input string) string {
+func removeStarsInfo(input string) string {
 	// Create a regular expression to find the "(⭐...)" pattern
 	re := regexp.MustCompile(`\(⭐.*\)`)
 	// Replace the matched substrings with an empty string
@@ -102,12 +101,12 @@ func formatStarCount(stars int) string {
 	if stars < 1000 {
 		return fmt.Sprintf("%d", stars)
 	} else if stars < 10000 {
-		rounded := float64(stars) / 1000
-		if rounded*10.0 == math.Ceil(rounded*10.0) {
-			return fmt.Sprintf("%.0fk", rounded)
-		} else {
-			return fmt.Sprintf("%.1fk", rounded)
+		wholePart := stars / 1000
+		decimalPart := (stars % 1000) / 100
+		if decimalPart == 0 {
+			return fmt.Sprintf("%dk", wholePart)
 		}
+		return fmt.Sprintf("%d.%dk", wholePart, decimalPart)
 	} else {
 		return fmt.Sprintf("%dk", stars/1000)
 	}

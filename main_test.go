@@ -12,9 +12,11 @@ func TestFormatStarCount(t *testing.T) {
 		{999, "999"},
 		{1000, "1k"},
 		{2501, "2.5k"},
-		{4108, "4.1k"},
-		{6100, "6k"},
+		{4708, "4.7k"},
+		{5038, "5k"},
+		{6100, "6.1k"},
 		{12000, "12k"},
+		{78456, "78k"},
 	}
 
 	for _, test := range tests {
@@ -25,7 +27,7 @@ func TestFormatStarCount(t *testing.T) {
 	}
 }
 
-func TestRemoveStar(t *testing.T) {
+func TestRemoveStarsInfo(t *testing.T) {
 	tests := []struct {
 		input    string
 		expected string
@@ -36,7 +38,7 @@ func TestRemoveStar(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		output := removeStars(test.input)
+		output := removeStarsInfo(test.input)
 		if output != test.expected {
 			t.Errorf("Input: %s\nExpected: %s\nGot: %s", test.input, test.expected, output)
 		}

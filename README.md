@@ -1,23 +1,27 @@
-# Markdown Stars Updater
+# Markdown GitHub Stars Updater
 
 This is a Go program that reads a Markdown file containing GitHub repository links and updates the links with information about star counts.
 
 ## Usage
+The program will update the label links in Markdown file with star counts for each repository link.
+#### Build from sources
 
 1. Clone the repository:
 ```sh
-git clone https://github.com/yourusername/github-repo-star-counter.git
-cd github-repo-star-counter
+git clone https://github.com/stn1slv/markdown-github-stars-updater.git
+cd markdown-github-stars-updater
 ```
 
 2. Build and run the program:
 ```sh
 go build
-./github-repo-star-counter path/to/your/markdown/file.md
+./markdown-github-stars-updater path/to/your/markdown/file.md
  ```
 Replace path/to/your/markdown/file.md with the path to your Markdown file.
 
-3. The program will update the Markdown file with star counts for each repository link.
+#### Download compiled
+
+The last compiled version is available in [the releases section](https://github.com/stn1slv/markdown-github-stars-updater/releases/latest).
 
 ## Description
 This program utilizes the GitHub API to fetch star counts for GitHub repositories and updates the links in the provided Markdown file. It supports different star count formats based on the number of stars:
