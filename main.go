@@ -101,11 +101,13 @@ func formatStarCount(stars int) string {
 	if stars < 1000 {
 		return fmt.Sprintf("%d", stars)
 	} else if stars < 10000 {
-// Check if the stars count is divisible by 1000
-		if stars%1000 == 0 {
-			return fmt.Sprintf("%dk", stars/1000)
+  // Check if the stars count is divisible by 1000
+		rounded := float64(stars) / 1000
+		if rounded == float64(int(rounded)) {
+			return fmt.Sprintf("%dk", int(rounded))
+		} else {
+			return fmt.Sprintf("%.1fk", rounded)
 		}
-		return fmt.Sprintf("%.1fk", float64(stars)/1000)
 	} else {
 		return fmt.Sprintf("%dk", stars/1000)
 	}
