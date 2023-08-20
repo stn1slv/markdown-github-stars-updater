@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"regexp"
 	"strings"
@@ -13,7 +14,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go <path_to_markdown_file>")
+		fmt.Println("Usage: markdown-github-stars-updater <path_to_markdown_file>")
 		return
 	}
 	// Read markdown content
@@ -101,10 +102,9 @@ func formatStarCount(stars int) string {
 	if stars < 1000 {
 		return fmt.Sprintf("%d", stars)
 	} else if stars < 10000 {
-                // Check if the stars count is divisible by 1000
 		rounded := float64(stars) / 1000
-		if rounded == float64(int(rounded)) {
-			return fmt.Sprintf("%.1fk", rounded)
+		if rounded*10.0 == math.Ceil(rounded*10.0) {
+			return fmt.Sprintf("%.0fk", rounded)
 		} else {
 			return fmt.Sprintf("%.1fk", rounded)
 		}
