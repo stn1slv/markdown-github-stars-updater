@@ -23,6 +23,10 @@ Replace path/to/your/markdown/file.md with the path to your Markdown file.
 
 The last compiled version is available in [the releases section](https://github.com/stn1slv/markdown-github-stars-updater/releases/latest).
 
+#### GitHub Actions pipeline
+
+Please see [the pipeline example](https://github.com/stn1slv/awesome-integration/blob/main/.github/workflows/github-stars.yml) for my awesome-integration project.
+
 ## Description
 This program utilizes the GitHub API to fetch star counts for GitHub repositories and updates the links in the provided Markdown file. It supports different star count formats based on the number of stars:
 
