@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"testing"
 )
 
@@ -42,5 +43,26 @@ func TestRemoveStarsInfo(t *testing.T) {
 		if output != test.expected {
 			t.Errorf("Input: %s\nExpected: %s\nGot: %s", test.input, test.expected, output)
 		}
+	}
+}
+
+func TestGetAccessToken(t *testing.T) {
+	// Backup the existing environment variable and set a temporary one for the test
+	oldToken := os.Getenv("GITHUB_TOKEN")
+	os.Setenv("GITHUB_TOKEN", "test_token")
+
+	token := getAccessToken()
+	if token != "test_token" {
+		t.Errorf("Expected 'test_token', got '%s'", token)
+	}
+
+	// Restore the original environment variable
+	os.Setenv("GITHUB_TOKEN", oldToken)
+}
+
+func TestParseRepoName(t *testing.T) {
+	owner, repo := parseRepoName("google/go-github")
+	if owner != "google" || repo != "go-github" {
+		t.Errorf("Expected google and go-github, got %s and %s", owner, repo)
 	}
 }

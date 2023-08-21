@@ -42,6 +42,10 @@ func main() {
 	fmt.Println("Markdown file updated successfully.")
 }
 
+/*
+updateStarCounts finds GitHub repository links in the given markdownContent, fetches the current star counts,
+updates the star count information in markdownContent, and returns the updated content.
+*/
 func updateStarCounts(markdownContent string) (string, error) {
 	// Regular expression to find GitHub repository links
 	re := regexp.MustCompile(`\[([^\]]+)\]\((https:\/\/github\.com\/[^\/)]+\/[^\/)]+)\)`)
@@ -63,6 +67,7 @@ func updateStarCounts(markdownContent string) (string, error) {
 	return markdownContent, nil
 }
 
+// getStarsCount takes a GitHub repository URL and returns the current number of stars
 func getStarsCount(repoURL string) (int, error) {
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -81,6 +86,7 @@ func getStarsCount(repoURL string) (int, error) {
 	return repository.GetStargazersCount(), nil
 }
 
+// parseRepoName takes a GitHub repository name (formatted as "owner/repo") and returns the owner and repo parts.
 func parseRepoName(repoName string) (string, string) {
 	parts := strings.Split(repoName, "/")
 	if len(parts) != 2 {
@@ -89,6 +95,7 @@ func parseRepoName(repoName string) (string, string) {
 	return parts[0], parts[1]
 }
 
+// removeStarsInfo removes the existing star count information from the input string.
 func removeStarsInfo(input string) string {
 	// Create a regular expression to find the "(⭐...)" pattern
 	re := regexp.MustCompile(`\(⭐.*\)`)
@@ -97,6 +104,7 @@ func removeStarsInfo(input string) string {
 	return strings.TrimSpace(result)
 }
 
+// formatStarCount formats the given star count for display in the markdown content.
 func formatStarCount(stars int) string {
 	if stars < 1000 {
 		return fmt.Sprintf("%d", stars)
@@ -112,6 +120,7 @@ func formatStarCount(stars int) string {
 	}
 }
 
+// getAccessToken retrieves the GitHub access token from the environment variable
 func getAccessToken() string {
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
