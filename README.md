@@ -46,15 +46,15 @@ Please see [the pipeline example](https://github.com/stn1slv/awesome-integration
 This program utilizes the GitHub API to fetch star counts for GitHub repositories and updates the links in the provided Markdown file. It supports different star count formats based on the number of stars:
 
 - If the star count is less than 1000, the exact star count is shown (e.g., "⭐35").
-- If the star count is between 1000 and 9999, it is displayed in the format "1.1k" for 1100 stars.
-- If the star count is 10000 or more, it is displayed in the format "10k" for 10000 stars.
+- If the star count is between 1000 and 9999, it is displayed in the format "⭐1.1k" for 1100 stars.
+- If the star count is 10000 or more, it is displayed in the format "⭐10k" for 10000 stars.
 ## Requirements
 - Go programming language (https://golang.org/dl/)
 ## Configuration
 To use this program, you need to provide your GitHub access token for API requests. Set the GITHUB_TOKEN environment variable before running the program.
 
 ## License
-This project is licensed under the MIT License. See LICENSE for more information.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ## Acknowledgements
 Special thanks to the GitHub community and open-source contributors.
