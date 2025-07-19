@@ -139,7 +139,7 @@ func formatStarCount(stars int) string {
 func getAccessToken() (string, error) {
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		return "", errors.New("GITHUB_TOKEN environment variable not set")
+		return "", errors.New("missing GITHUB_TOKEN; set a GitHub personal access token")
 	}
 	return token, nil
 }
