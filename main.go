@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
 	"fmt"
 	"os"
 	"regexp"
@@ -12,12 +14,18 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: markdown-github-stars-updater <path_to_markdown_file>")
+	flagOutput := flag.String("output", "", "output file path (defaults to input file)")
+	flagDryRun := flag.Bool("dry-run", false, "print updated content instead of writing")
+	flag.Parse()
+
+	if flag.NArg() < 1 {
+		fmt.Println("Usage: markdown-github-stars-updater [flags] <path_to_markdown_file>")
+		flag.PrintDefaults()
 		return
 	}
+
 	// Read markdown content
-	filePath := os.Args[1]
+	filePath := flag.Arg(0)
 
 	markdownContent, err := os.ReadFile(filePath)
 	if err != nil {
@@ -32,8 +40,18 @@ func main() {
 		return
 	}
 
+	if *flagDryRun {
+		fmt.Print(updatedMarkdown)
+		return
+	}
+
+	outPath := filePath
+	if *flagOutput != "" {
+		outPath = *flagOutput
+	}
+
 	// Write the updated content back to the file
-	err = os.WriteFile(filePath, []byte(updatedMarkdown), 0644)
+	err = os.WriteFile(outPath, []byte(updatedMarkdown), 0644)
 	if err != nil {
 		fmt.Println("Error writing updated markdown to file:", err)
 		return
@@ -46,6 +64,8 @@ func main() {
 updateStarCounts finds GitHub repository links in the given markdownContent, fetches the current star counts,
 updates the star count information in markdownContent, and returns the updated content.
 */
+var fetchStars = getStarsCount
+
 func updateStarCounts(markdownContent string) (string, error) {
 	// Regular expression to find GitHub repository links
 	re := regexp.MustCompile(`\[([^\]]+)\]\((https:\/\/github\.com\/[^\/)]+\/[^\/)]+)\)`)
@@ -54,7 +74,7 @@ func updateStarCounts(markdownContent string) (string, error) {
 	for _, match := range matches {
 		itemName := match[1]
 		repoURL := match[2]
-		starCount, err := getStarsCount(repoURL)
+		starCount, err := fetchStars(repoURL)
 		if err != nil {
 			return "", err
 		}
@@ -69,9 +89,14 @@ func updateStarCounts(markdownContent string) (string, error) {
 
 // getStarsCount takes a GitHub repository URL and returns the current number of stars
 func getStarsCount(repoURL string) (int, error) {
+	token, err := getAccessToken()
+	if err != nil {
+		return 0, err
+	}
+
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: getAccessToken()},
+		&oauth2.Token{AccessToken: token},
 	)
 	tc := oauth2.NewClient(ctx, ts)
 
@@ -121,11 +146,10 @@ func formatStarCount(stars int) string {
 }
 
 // getAccessToken retrieves the GitHub access token from the environment variable
-func getAccessToken() string {
+func getAccessToken() (string, error) {
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		fmt.Println("Error: GITHUB_TOKEN environment variable not set")
-		os.Exit(1)
+		return "", errors.New("GITHUB_TOKEN environment variable not set")
 	}
-	return token
+	return token, nil
 }

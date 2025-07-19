@@ -30,8 +30,15 @@ cd markdown-github-stars-updater
 2. Build and run the program:
 ```sh
 go build
-./markdown-github-stars-updater path/to/your/markdown/file.md
- ```
+./markdown-github-stars-updater [flags] path/to/your/markdown/file.md
+```
+Flags:
+```
+  -output string
+        output file path (defaults to input file)
+  -dry-run
+        print updated content instead of writing
+```
 Replace path/to/your/markdown/file.md with the path to your Markdown file.
 
 #### Download compiled
@@ -48,10 +55,12 @@ This program utilizes the GitHub API to fetch star counts for GitHub repositorie
 - If the star count is less than 1000, the exact star count is shown (e.g., "⭐35").
 - If the star count is between 1000 and 9999, it is displayed in the format "⭐1.1k" for 1100 stars.
 - If the star count is 10000 or more, it is displayed in the format "⭐10k" for 10000 stars.
+The tool processes one file at a time, so run it separately for each Markdown file you need to update. The link detection relies on a simple regular expression and may not cover every possible Markdown link variation.
 ## Requirements
 - Go programming language (https://golang.org/dl/)
 ## Configuration
-To use this program, you need to provide your GitHub access token for API requests. Set the GITHUB_TOKEN environment variable before running the program.
+To use this program, you need to provide your GitHub access token for API requests. Set the `GITHUB_TOKEN` environment variable before running the program.
+Using a token prevents hitting the very small unauthenticated rate limits of the GitHub API.
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for more information.
