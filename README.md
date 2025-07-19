@@ -18,7 +18,9 @@ After processing:
 >- [Redoc (⭐20k)](https://github.com/Redocly/redoc) - An open-source tool for generating documentation from OpenAPI (fka Swagger) definitions, with customizable themes, language support, and branding.
 
 ## Usage
-The program will update the label links in Markdown file with star counts for each repository link.
+The program updates GitHub links in a Markdown file with their current star counts.
+You must provide a GitHub token via the `GITHUB_TOKEN` environment variable.
+GitHub rate limits apply when fetching repository information.
 #### Build from sources
 
 1. Clone the repository:
@@ -30,9 +32,14 @@ cd markdown-github-stars-updater
 2. Build and run the program:
 ```sh
 go build
-./markdown-github-stars-updater path/to/your/markdown/file.md
- ```
+./markdown-github-stars-updater [flags] path/to/your/markdown/file.md
+```
 Replace path/to/your/markdown/file.md with the path to your Markdown file.
+Available flags:
+* `-out` &ndash; write output to the specified file instead of overwriting the input.
+* `-dry-run` &ndash; print the updated Markdown to stdout without modifying any files.
+
+Run the tool separately for each Markdown file you want to update. The current implementation relies on a regular expression to find `github.com` links, so unusual Markdown constructs may not be detected.
 
 #### Download compiled
 
@@ -51,7 +58,7 @@ This program utilizes the GitHub API to fetch star counts for GitHub repositorie
 ## Requirements
 - Go programming language (https://golang.org/dl/)
 ## Configuration
-To use this program, you need to provide your GitHub access token for API requests. Set the GITHUB_TOKEN environment variable before running the program.
+Set the `GITHUB_TOKEN` environment variable with a personal access token so the tool can query the GitHub API. The requests are subject to GitHub's rate limits.
 
 ## License
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for more information.

@@ -1,8 +1,14 @@
 package main
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
+
+	"github.com/google/go-github/v68/github"
 )
 
 func TestFormatStarCount(t *testing.T) {
@@ -51,7 +57,10 @@ func TestGetAccessToken(t *testing.T) {
 	oldToken := os.Getenv("GITHUB_TOKEN")
 	os.Setenv("GITHUB_TOKEN", "test_token")
 
-	token := getAccessToken()
+	token, err := getAccessToken()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	if token != "test_token" {
 		t.Errorf("Expected 'test_token', got '%s'", token)
 	}
@@ -60,9 +69,46 @@ func TestGetAccessToken(t *testing.T) {
 	os.Setenv("GITHUB_TOKEN", oldToken)
 }
 
+func TestGetAccessTokenMissing(t *testing.T) {
+	oldToken := os.Getenv("GITHUB_TOKEN")
+	os.Unsetenv("GITHUB_TOKEN")
+
+	_, err := getAccessToken()
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+
+	os.Setenv("GITHUB_TOKEN", oldToken)
+}
+
 func TestParseRepoName(t *testing.T) {
 	owner, repo := parseRepoName("google/go-github")
 	if owner != "google" || repo != "go-github" {
 		t.Errorf("Expected google and go-github, got %s and %s", owner, repo)
+	}
+}
+
+func TestUpdateStarCounts(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/repos/testowner/testrepo", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"stargazers_count": 42}`)
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	client := github.NewClient(server.Client())
+	baseURL, _ := url.Parse(server.URL + "/")
+	client.BaseURL = baseURL
+
+	md := "- [TestRepo](https://github.com/testowner/testrepo)"
+	updated, err := updateStarCounts(md, client)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expected := "- [TestRepo (⭐42)](https://github.com/testowner/testrepo)"
+	if updated != expected {
+		t.Errorf("expected %q, got %q", expected, updated)
 	}
 }
