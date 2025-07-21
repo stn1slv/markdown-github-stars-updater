@@ -112,3 +112,57 @@ func TestUpdateStarCounts(t *testing.T) {
 		t.Errorf("expected %q, got %q", expected, updated)
 	}
 }
+
+func TestUpdateStarCountsMultiple(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/repos/owner/repo1", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"stargazers_count": 1}`)
+	})
+	mux.HandleFunc("/repos/owner/repo2", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"stargazers_count": 2}`)
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	client := github.NewClient(server.Client())
+	baseURL, _ := url.Parse(server.URL + "/")
+	client.BaseURL = baseURL
+
+	md := "- [R1](https://github.com/owner/repo1)\n- [R2](https://github.com/owner/repo2)"
+	updated, err := updateStarCounts(md, client)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expected := "- [R1 (⭐1)](https://github.com/owner/repo1)\n- [R2 (⭐2)](https://github.com/owner/repo2)"
+	if updated != expected {
+		t.Errorf("expected %q, got %q", expected, updated)
+	}
+}
+
+func TestUpdateStarCountsExistingStars(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/repos/owner/repo", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"stargazers_count": 10}`)
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	client := github.NewClient(server.Client())
+	baseURL, _ := url.Parse(server.URL + "/")
+	client.BaseURL = baseURL
+
+	md := "- [R (⭐5)](https://github.com/owner/repo)"
+	updated, err := updateStarCounts(md, client)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	expected := "- [R (⭐10)](https://github.com/owner/repo)"
+	if updated != expected {
+		t.Errorf("expected %q, got %q", expected, updated)
+	}
+}

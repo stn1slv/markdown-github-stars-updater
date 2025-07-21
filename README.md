@@ -19,7 +19,7 @@ After processing:
 
 ## Usage
 The program updates GitHub links in a Markdown file with their current star counts.
-You must provide a GitHub token via the `GITHUB_TOKEN` environment variable.
+You must provide a GitHub token via the `GITHUB_TOKEN` environment variable. The value should be a personal access token with read-only permissions.
 GitHub rate limits apply when fetching repository information.
 #### Build from sources
 
