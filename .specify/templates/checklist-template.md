@@ -20,17 +20,18 @@
   ============================================================================
 -->
 
-## [Category 1]
+## Quality Assurance
 
-- [ ] CHK001 First checklist item with clear action
-- [ ] CHK002 Second checklist item
-- [ ] CHK003 Third checklist item
+- [ ] Run `go fmt ./...` to ensure standard formatting
+- [ ] Run `go vet ./...` to catch common errors
+- [ ] Run `go test ./...` to verify all tests pass
+- [ ] Verify no new linter warnings (e.g., `staticcheck` or `golangci-lint`)
 
-## [Category 2]
+## Documentation
 
-- [ ] CHK004 Another category item
-- [ ] CHK005 Item with specific criteria
-- [ ] CHK006 Final item in this category
+- [ ] Update README.md if usage changed
+- [ ] Ensure public functions have GoDoc comments
+- [ ] Verify `-help` output is accurate
 
 ## Notes
 

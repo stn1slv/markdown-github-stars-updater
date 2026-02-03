@@ -22,16 +22,16 @@
 
 ### User Story 1 - [Brief Title] (Priority: P1)
 
-[Describe this user journey in plain language]
+[Describe this user journey in plain language, e.g., "As a user, I want to run the tool with flag X to achieve Y"]
 
 **Why this priority**: [Explain the value and why it has this priority level]
 
-**Independent Test**: [Describe how this can be tested independently - e.g., "Can be fully tested by [specific action] and delivers [specific value]"]
+**Independent Test**: [Describe how this can be tested independently - e.g., "Run command with flag X, verify output Y"]
 
 **Acceptance Scenarios**:
 
-1. **Given** [initial state], **When** [action], **Then** [expected outcome]
-2. **Given** [initial state], **When** [action], **Then** [expected outcome]
+1. **Given** [initial state/files], **When** executing `[command] [flags]`, **Then** [expected stdout/stderr/file change]
+2. **Given** [error condition], **When** executing `[command]`, **Then** [expected error message and exit code]
 
 ---
 
@@ -84,16 +84,16 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: The CLI MUST accept [input type] via [stdin/flag/file]
+- **FR-002**: The CLI MUST output [result format] to [stdout/file]
+- **FR-003**: The CLI MUST return exit code 0 on success and non-zero on failure
+- **FR-004**: The system MUST support configuration via [flags/env vars/config file]
+- **FR-005**: The system MUST handle [specific error condition] gracefully
 
 *Example of marking unclear requirements:*
 
-- **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
-- **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+- **FR-006**: The CLI MUST support [NEEDS CLARIFICATION: specific flag name or behavior?]
+- **FR-007**: The system MUST process files up to [NEEDS CLARIFICATION: max size?]
 
 ### Key Entities *(include if feature involves data)*
 
@@ -109,7 +109,7 @@
 
 ### Measurable Outcomes
 
-- **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
-- **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
-- **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **SC-001**: [Performance metric, e.g., "Process 1GB file in under 10 seconds"]
+- **SC-002**: [Reliability metric, e.g., "Handle 100% of defined edge cases without panic"]
+- **SC-003**: [Usability metric, e.g., "Help command provides clear usage examples"]
+- **SC-004**: [Code metric, e.g., "Maintain test coverage above 80%"]
