@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -53,7 +54,6 @@ func TestRemoveStarsInfo(t *testing.T) {
 }
 
 func TestGetAccessToken(t *testing.T) {
-	// Backup the existing environment variable and set a temporary one for the test
 	oldToken := os.Getenv("GITHUB_TOKEN")
 	os.Setenv("GITHUB_TOKEN", "test_token")
 
@@ -65,7 +65,6 @@ func TestGetAccessToken(t *testing.T) {
 		t.Errorf("Expected 'test_token', got '%s'", token)
 	}
 
-	// Restore the original environment variable
 	os.Setenv("GITHUB_TOKEN", oldToken)
 }
 
@@ -88,6 +87,30 @@ func TestParseRepoName(t *testing.T) {
 	}
 }
 
+// Helper to simulate the update flow for tests
+func runUpdateFlow(t *testing.T, content string, client *github.Client, updater LinkUpdater) string {
+	repos, err := updater.FindRepos(content)
+	if err != nil {
+		t.Fatalf("FindRepos failed: %v", err)
+	}
+
+	stars := make(map[string]int)
+	ctx := context.Background()
+	for _, repoURL := range repos {
+		count, err := getStarsCount(ctx, client, repoURL)
+		if err != nil {
+			t.Fatalf("getStarsCount failed for %s: %v", repoURL, err)
+		}
+		stars[repoURL] = count
+	}
+
+	updated, err := updater.UpdateContent(content, stars)
+	if err != nil {
+		t.Fatalf("UpdateContent failed: %v", err)
+	}
+	return updated
+}
+
 func TestUpdateStarCounts(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/testowner/testrepo", func(w http.ResponseWriter, r *http.Request) {
@@ -103,10 +126,7 @@ func TestUpdateStarCounts(t *testing.T) {
 	client.BaseURL = baseURL
 
 	md := "- [TestRepo](https://github.com/testowner/testrepo)"
-	updated, err := updateStarCounts(md, client)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	updated := runUpdateFlow(t, md, client, &MarkdownUpdater{})
 	expected := "- [TestRepo (⭐42)](https://github.com/testowner/testrepo)"
 	if updated != expected {
 		t.Errorf("expected %q, got %q", expected, updated)
@@ -132,10 +152,7 @@ func TestUpdateStarCountsMultiple(t *testing.T) {
 	client.BaseURL = baseURL
 
 	md := "- [R1](https://github.com/owner/repo1)\n- [R2](https://github.com/owner/repo2)"
-	updated, err := updateStarCounts(md, client)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	updated := runUpdateFlow(t, md, client, &MarkdownUpdater{})
 	expected := "- [R1 (⭐1)](https://github.com/owner/repo1)\n- [R2 (⭐2)](https://github.com/owner/repo2)"
 	if updated != expected {
 		t.Errorf("expected %q, got %q", expected, updated)
@@ -157,11 +174,30 @@ func TestUpdateStarCountsExistingStars(t *testing.T) {
 	client.BaseURL = baseURL
 
 	md := "- [R (⭐5)](https://github.com/owner/repo)"
-	updated, err := updateStarCounts(md, client)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	updated := runUpdateFlow(t, md, client, &MarkdownUpdater{})
 	expected := "- [R (⭐10)](https://github.com/owner/repo)"
+	if updated != expected {
+		t.Errorf("expected %q, got %q", expected, updated)
+	}
+}
+
+func TestUpdateStarCountsAsciiDoc(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/repos/testowner/adoc-repo", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"stargazers_count": 99}`)
+	})
+
+	server := httptest.NewServer(mux)
+	defer server.Close()
+
+	client := github.NewClient(server.Client())
+	baseURL, _ := url.Parse(server.URL + "/")
+	client.BaseURL = baseURL
+
+	adoc := "link:https://github.com/testowner/adoc-repo[My Repo]"
+	updated := runUpdateFlow(t, adoc, client, &AsciiDocUpdater{})
+	expected := "link:https://github.com/testowner/adoc-repo[My Repo (⭐99)]"
 	if updated != expected {
 		t.Errorf("expected %q, got %q", expected, updated)
 	}

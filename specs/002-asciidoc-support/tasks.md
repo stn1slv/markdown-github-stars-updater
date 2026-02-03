@@ -26,8 +26,8 @@ description: "Task list for AsciiDoc support feature"
 
 **Purpose**: Project initialization and dependency updates
 
-- [ ] T001 Update go.mod to Go 1.25 and run `go get -u` to update dependencies
-- [ ] T002 Create new source files `markdown.go` and `asciidoc.go` (empty initially) per plan
+- [x] T001 Update go.mod to Go 1.25 and run `go get -u` to update dependencies
+- [x] T002 Create new source files `markdown.go` and `asciidoc.go` (empty initially) per plan
 
 ---
 
@@ -37,10 +37,10 @@ description: "Task list for AsciiDoc support feature"
 
 **⚠️ CRITICAL**: Must complete before implementing AsciiDoc logic.
 
-- [ ] T003 Define `LinkUpdater` interface in `common.go` (or `main.go` if keeping it simple)
-- [ ] T004 [P] Move existing Markdown parsing logic from `main.go` to `MarkdownUpdater` struct in `markdown.go`
-- [ ] T005 Refactor `main.go` to use `LinkUpdater` interface instead of hardcoded logic
-- [ ] T006 Verify regression: Run existing `main_test.go` or manual test to ensure Markdown still works
+- [x] T003 Define `LinkUpdater` interface in `common.go` (or `main.go` if keeping it simple)
+- [x] T004 [P] Move existing Markdown parsing logic from `main.go` to `MarkdownUpdater` struct in `markdown.go`
+- [x] T005 Refactor `main.go` to use `LinkUpdater` interface instead of hardcoded logic
+- [x] T006 Verify regression: Run existing `main_test.go` or manual test to ensure Markdown still works
 
 **Checkpoint**: Foundation ready - code refactored, Markdown support preserved.
 
@@ -53,12 +53,10 @@ description: "Task list for AsciiDoc support feature"
 **Independent Test**: Run `./updater test.adoc` and verify star counts appear.
 
 ### Tests for User Story 1
-- [ ] T007 [P] [US1] Create unit tests for AsciiDoc regex parsing in `asciidoc_test.go`
-
-### Implementation for User Story 1
-- [ ] T008 [P] [US1] Implement `AsciiDocUpdater` struct and `FindRepos` logic in `asciidoc.go`
-- [ ] T009 [P] [US1] Implement `UpdateContent` logic for AsciiDoc in `asciidoc.go`
-- [ ] T010 [US1] Update `main.go` to select `AsciiDocUpdater` when file extension is `.adoc` or `.asciidoc`
+- [x] T007 [P] [US1] Create unit tests for AsciiDoc regex parsing in `asciidoc_test.go`
+- [x] T008 [P] [US1] Implement `AsciiDocUpdater` struct and `FindRepos` logic in `asciidoc.go`
+- [x] T009 [P] [US1] Implement `UpdateContent` logic for AsciiDoc in `asciidoc.go`
+- [x] T010 [US1] Update `main.go` to select `AsciiDocUpdater` when file extension is `.adoc` or `.asciidoc`
 
 **Checkpoint**: User Story 1 fully functional. AsciiDoc files can be updated.
 
@@ -71,8 +69,8 @@ description: "Task list for AsciiDoc support feature"
 **Independent Test**: Run with `-dry-run` and `-out` and verify behavior.
 
 ### Implementation for User Story 2
-- [ ] T011 [US2] Verify and ensure `main.go` passes correct flags/writer to `LinkUpdater` flow (likely already done in T005, this is a verification task)
-- [ ] T012 [P] [US2] Add integration test case in `main_test.go` for AsciiDoc with `-dry-run`
+- [x] T011 [US2] Verify and ensure `main.go` passes correct flags/writer to `LinkUpdater` flow (likely already done in T005, this is a verification task)
+- [x] T012 [P] [US2] Add integration test case in `main_test.go` for AsciiDoc with `-dry-run`
 
 **Checkpoint**: User Story 2 verified.
 
@@ -82,9 +80,9 @@ description: "Task list for AsciiDoc support feature"
 
 **Purpose**: Documentation and final cleanup
 
-- [ ] T013 [P] Update `README.md` to mention AsciiDoc support and usage examples
-- [ ] T014 Run `go fmt` and `go vet` across all files
-- [ ] T015 Run `quickstart.md` validation steps manually
+- [x] T013 [P] Update `README.md` to mention AsciiDoc support and usage examples
+- [x] T014 Run `go fmt` and `go vet` across all files
+- [x] T015 Run `quickstart.md` validation steps manually
 
 ---
 

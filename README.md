@@ -18,7 +18,7 @@ After processing:
 >- [Redoc (⭐20k)](https://github.com/Redocly/redoc) - An open-source tool for generating documentation from OpenAPI (fka Swagger) definitions, with customizable themes, language support, and branding.
 
 ## Usage
-The program updates GitHub links in a Markdown file with their current star counts.
+The program updates GitHub links in a Markdown or AsciiDoc file with their current star counts.
 You must provide a GitHub token via the `GITHUB_TOKEN` environment variable. The value should be a personal access token with read-only permissions.
 GitHub rate limits apply when fetching repository information.
 #### Build from sources
@@ -34,12 +34,20 @@ cd markdown-github-stars-updater
 go build
 ./markdown-github-stars-updater [flags] path/to/your/markdown/file.md
 ```
-Replace path/to/your/markdown/file.md with the path to your Markdown file.
+Replace `path/to/your/markdown/file.md` with the path to your file (supported extensions: `.md`, `.markdown`, `.adoc`, `.asciidoc`).
+
 Available flags:
 * `-out` &ndash; write output to the specified file instead of overwriting the input.
-* `-dry-run` &ndash; print the updated Markdown to stdout without modifying any files.
+* `-dry-run` &ndash; print the updated content to stdout without modifying any files.
 
-Run the tool separately for each Markdown file you want to update. The current implementation relies on a regular expression to find `github.com` links, so unusual Markdown constructs may not be detected.
+Run the tool separately for each file you want to update. The current implementation relies on regular expressions to find `github.com` links.
+
+#### AsciiDoc Support
+The tool supports AsciiDoc links in the following formats:
+- Macro style: `link:https://github.com/owner/repo[Title]`
+- Inline style: `https://github.com/owner/repo[Title]`
+
+Output format: `link:https://github.com/owner/repo[Title (⭐1.2k)]`
 
 #### Download compiled
 

@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"regexp"
+	"path/filepath"
 	"strings"
 
 	"github.com/google/go-github/v68/github"
@@ -19,18 +19,19 @@ func main() {
 	flag.Parse()
 
 	if flag.NArg() < 1 {
-		fmt.Println("Usage: markdown-github-stars-updater [flags] <path_to_markdown_file>")
+		fmt.Println("Usage: markdown-github-stars-updater [flags] <path_to_file>")
 		flag.PrintDefaults()
 		return
 	}
 
 	filePath := flag.Arg(0)
 
-	markdownContent, err := os.ReadFile(filePath)
+	contentBytes, err := os.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("Error reading the markdown file:", err)
+		fmt.Println("Error reading the file:", err)
 		return
 	}
+	content := string(contentBytes)
 
 	token, err := getAccessToken()
 	if err != nil {
@@ -40,14 +41,58 @@ func main() {
 
 	client := newGitHubClient(token)
 
-	updatedMarkdown, err := updateStarCounts(string(markdownContent), client)
+	// Select Updater based on extension
+	ext := strings.ToLower(filepath.Ext(filePath))
+	var updater LinkUpdater
+
+	switch ext {
+	case ".md", ".markdown":
+		updater = &MarkdownUpdater{}
+	case ".adoc", ".asciidoc":
+		updater = &AsciiDocUpdater{}
+	default:
+		// Default to Markdown for backward compatibility if no extension matches, or error out?
+		// Spec says "Tool automatically detects file type or applies appropriate parsing".
+		// Let's assume Markdown if unknown for now, or maybe print a warning?
+		// Given the project name is "markdown-github-stars-updater", defaulting to markdown seems safe,
+		// but explicit support for asciidoc is added.
+		// Let's print a warning and default to markdown for now, or just fail.
+		// Failing is safer to avoid corrupting other files.
+		fmt.Printf("Unsupported file extension: %s. Supported: .md, .markdown, .adoc, .asciidoc\n", ext)
+		return
+	}
+
+	// 1. Find Repos
+	repos, err := updater.FindRepos(content)
 	if err != nil {
-		fmt.Println("Error updating star counts:", err)
+		fmt.Println("Error finding repositories:", err)
+		return
+	}
+
+	// 2. Fetch Stars
+	stars := make(map[string]int)
+	ctx := context.Background()
+	for _, repoURL := range repos {
+		if _, exists := stars[repoURL]; exists {
+			continue
+		}
+		count, err := getStarsCount(ctx, client, repoURL)
+		if err != nil {
+			fmt.Printf("Warning: Could not fetch stars for %s: %v\n", repoURL, err)
+			continue
+		}
+		stars[repoURL] = count
+	}
+
+	// 3. Update Content
+	updatedContent, err := updater.UpdateContent(content, stars)
+	if err != nil {
+		fmt.Println("Error updating content:", err)
 		return
 	}
 
 	if *dryRun {
-		fmt.Println(updatedMarkdown)
+		fmt.Println(updatedContent)
 		return
 	}
 
@@ -56,38 +101,13 @@ func main() {
 		output = *outPath
 	}
 
-	err = os.WriteFile(output, []byte(updatedMarkdown), 0644)
+	err = os.WriteFile(output, []byte(updatedContent), 0644)
 	if err != nil {
-		fmt.Println("Error writing updated markdown to file:", err)
+		fmt.Println("Error writing updated file:", err)
 		return
 	}
 
-	fmt.Println("Markdown file updated successfully.")
-}
-
-/*
-updateStarCounts finds GitHub repository links in the given markdownContent, fetches the current star counts,
-updates the star count information in markdownContent, and returns the updated content.
-*/
-func updateStarCounts(markdownContent string, client *github.Client) (string, error) {
-	// Regular expression to find GitHub repository links
-	re := regexp.MustCompile(`\[([^\]]+)\]\((https:\/\/github\.com\/[^\/)]+\/[^\/)]+)\)`)
-	matches := re.FindAllStringSubmatch(markdownContent, -1)
-
-	for _, match := range matches {
-		itemName := match[1]
-		repoURL := match[2]
-		starCount, err := getStarsCount(context.Background(), client, repoURL)
-		if err != nil {
-			return "", err
-		}
-
-		// Update star count in the link title
-		updatedLink := fmt.Sprintf("[%s (⭐%s)](%s)", removeStarsInfo(itemName), formatStarCount(starCount), repoURL)
-		markdownContent = strings.Replace(markdownContent, match[0], updatedLink, 1)
-	}
-
-	return markdownContent, nil
+	fmt.Println("File updated successfully.")
 }
 
 // getStarsCount takes a GitHub repository URL and returns the current number of stars
@@ -108,31 +128,6 @@ func parseRepoName(repoName string) (string, string) {
 		panic("Invalid repository name format")
 	}
 	return parts[0], parts[1]
-}
-
-// removeStarsInfo removes the existing star count information from the input string.
-func removeStarsInfo(input string) string {
-	// Create a regular expression to find the "(⭐...)" pattern
-	re := regexp.MustCompile(`\(⭐.*\)`)
-	// Replace the matched substrings with an empty string
-	result := re.ReplaceAllString(input, "")
-	return strings.TrimSpace(result)
-}
-
-// formatStarCount formats the given star count for display in the markdown content.
-func formatStarCount(stars int) string {
-	if stars < 1000 {
-		return fmt.Sprintf("%d", stars)
-	} else if stars < 10000 {
-		wholePart := stars / 1000
-		decimalPart := (stars % 1000) / 100
-		if decimalPart == 0 {
-			return fmt.Sprintf("%dk", wholePart)
-		}
-		return fmt.Sprintf("%d.%dk", wholePart, decimalPart)
-	} else {
-		return fmt.Sprintf("%dk", stars/1000)
-	}
 }
 
 // getAccessToken retrieves the GitHub access token from the environment variable
