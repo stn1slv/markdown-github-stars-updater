@@ -1,3 +1,4 @@
+// Package main provides the core functionality for updating GitHub star counts in Markdown and AsciiDoc files.
 package main
 
 import (
@@ -26,16 +27,17 @@ func removeStarsInfo(input string) string {
 
 // formatStarCount formats the given star count for display in the markdown content.
 func formatStarCount(stars int) string {
-	if stars < 1000 {
+	switch {
+	case stars < 1000:
 		return fmt.Sprintf("%d", stars)
-	} else if stars < 10000 {
+	case stars < 10000:
 		wholePart := stars / 1000
 		decimalPart := (stars % 1000) / 100
 		if decimalPart == 0 {
 			return fmt.Sprintf("%dk", wholePart)
 		}
 		return fmt.Sprintf("%d.%dk", wholePart, decimalPart)
-	} else {
+	default:
 		return fmt.Sprintf("%dk", stars/1000)
 	}
 }

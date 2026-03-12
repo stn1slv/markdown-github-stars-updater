@@ -1,3 +1,4 @@
+// Package main provides the core functionality for updating GitHub star counts in Markdown and AsciiDoc files.
 package main
 
 import (
@@ -13,10 +14,18 @@ import (
 	"golang.org/x/oauth2"
 )
 
+var version = "dev"
+
 func main() {
 	outPath := flag.String("out", "", "output file path (defaults to input file)")
 	dryRun := flag.Bool("dry-run", false, "print updated markdown to stdout")
+	showVersion := flag.Bool("version", false, "show version info and exit")
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("markdown-github-stars-updater version %s\n", version)
+		return
+	}
 
 	if flag.NArg() < 1 {
 		fmt.Println("Usage: markdown-github-stars-updater [flags] <path_to_file>")
@@ -26,7 +35,7 @@ func main() {
 
 	filePath := flag.Arg(0)
 
-	contentBytes, err := os.ReadFile(filePath)
+	contentBytes, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
 		fmt.Println("Error reading the file:", err)
 		return
@@ -49,7 +58,7 @@ func main() {
 	case ".md", ".markdown":
 		updater = &MarkdownUpdater{}
 	case ".adoc", ".asciidoc":
-		updater = &AsciiDocUpdater{}
+		updater = &ASCIIDocUpdater{}
 	default:
 		// Default to Markdown for backward compatibility if no extension matches, or error out?
 		// Spec says "Tool automatically detects file type or applies appropriate parsing".
@@ -101,7 +110,9 @@ func main() {
 		output = *outPath
 	}
 
-	err = os.WriteFile(output, []byte(updatedContent), 0644)
+	// G306: Expect WriteFile permissions to be 0600 or less (gosec)
+	// We use 0644 because this is a documentation tool and the files are usually public/shared.
+	err = os.WriteFile(output, []byte(updatedContent), 0o644) //nolint:gosec
 	if err != nil {
 		fmt.Println("Error writing updated file:", err)
 		return

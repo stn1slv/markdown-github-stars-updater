@@ -1,3 +1,4 @@
+// Package main provides the core functionality for updating GitHub star counts in Markdown and AsciiDoc files.
 package main
 
 import (
@@ -34,11 +35,11 @@ func TestAsciiDocFindRepos(t *testing.T) {
 		{
 			name:     "No links",
 			content:  "Just some text without links.",
-			expected: nil,
+			expected: []string{},
 		},
 	}
 
-	updater := &AsciiDocUpdater{}
+	updater := &ASCIIDocUpdater{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := updater.FindRepos(tt.content)
@@ -85,7 +86,7 @@ func TestAsciiDocUpdateContent(t *testing.T) {
 		},
 	}
 
-	updater := &AsciiDocUpdater{}
+	updater := &ASCIIDocUpdater{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := updater.UpdateContent(tt.content, tt.stars)

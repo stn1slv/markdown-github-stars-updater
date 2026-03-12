@@ -1,3 +1,4 @@
+// Package main provides the core functionality for updating GitHub star counts in Markdown and AsciiDoc files.
 package main
 
 import (
@@ -55,7 +56,7 @@ func TestRemoveStarsInfo(t *testing.T) {
 
 func TestGetAccessToken(t *testing.T) {
 	oldToken := os.Getenv("GITHUB_TOKEN")
-	os.Setenv("GITHUB_TOKEN", "test_token")
+	_ = os.Setenv("GITHUB_TOKEN", "test_token")
 
 	token, err := getAccessToken()
 	if err != nil {
@@ -65,19 +66,19 @@ func TestGetAccessToken(t *testing.T) {
 		t.Errorf("Expected 'test_token', got '%s'", token)
 	}
 
-	os.Setenv("GITHUB_TOKEN", oldToken)
+	_ = os.Setenv("GITHUB_TOKEN", oldToken)
 }
 
 func TestGetAccessTokenMissing(t *testing.T) {
 	oldToken := os.Getenv("GITHUB_TOKEN")
-	os.Unsetenv("GITHUB_TOKEN")
+	_ = os.Unsetenv("GITHUB_TOKEN")
 
 	_, err := getAccessToken()
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
 
-	os.Setenv("GITHUB_TOKEN", oldToken)
+	_ = os.Setenv("GITHUB_TOKEN", oldToken)
 }
 
 func TestParseRepoName(t *testing.T) {
@@ -115,7 +116,7 @@ func TestUpdateStarCounts(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/testowner/testrepo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"stargazers_count": 42}`)
+		_, _ = fmt.Fprint(w, `{"stargazers_count": 42}`)
 	})
 
 	server := httptest.NewServer(mux)
@@ -137,11 +138,11 @@ func TestUpdateStarCountsMultiple(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/owner/repo1", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"stargazers_count": 1}`)
+		_, _ = fmt.Fprint(w, `{"stargazers_count": 1}`)
 	})
 	mux.HandleFunc("/repos/owner/repo2", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"stargazers_count": 2}`)
+		_, _ = fmt.Fprint(w, `{"stargazers_count": 2}`)
 	})
 
 	server := httptest.NewServer(mux)
@@ -163,7 +164,7 @@ func TestUpdateStarCountsExistingStars(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/owner/repo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"stargazers_count": 10}`)
+		_, _ = fmt.Fprint(w, `{"stargazers_count": 10}`)
 	})
 
 	server := httptest.NewServer(mux)
@@ -185,7 +186,7 @@ func TestUpdateStarCountsAsciiDoc(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/repos/testowner/adoc-repo", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprint(w, `{"stargazers_count": 99}`)
+		_, _ = fmt.Fprint(w, `{"stargazers_count": 99}`)
 	})
 
 	server := httptest.NewServer(mux)
@@ -196,7 +197,7 @@ func TestUpdateStarCountsAsciiDoc(t *testing.T) {
 	client.BaseURL = baseURL
 
 	adoc := "link:https://github.com/testowner/adoc-repo[My Repo]"
-	updated := runUpdateFlow(t, adoc, client, &AsciiDocUpdater{})
+	updated := runUpdateFlow(t, adoc, client, &ASCIIDocUpdater{})
 	expected := "link:https://github.com/testowner/adoc-repo[My Repo (⭐99)]"
 	if updated != expected {
 		t.Errorf("expected %q, got %q", expected, updated)

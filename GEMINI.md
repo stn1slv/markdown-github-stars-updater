@@ -20,9 +20,13 @@ Auto-generated from all feature plans. Last updated: 2026-03-12
 
 ## Commands
 
-- **Build**: `go build -o updater`
-- **Test**: `go test ./...`
-- **Lint**: `go vet ./...`
+- **Setup**: `make setup`
+- **Build**: `make build`
+- **Test**: `make test`
+- **Lint**: `make lint` (runs `golangci-lint`, `govulncheck`, and `nilaway`)
+- **Format**: `make format` (runs `gofumpt`)
+- **Run**: `make run` (example usage)
+- **Upgrade Deps**: `make upgrade-deps` (upgrades all dependencies)
 
 ## Code Style
 

@@ -1,0 +1,47 @@
+run:
+  timeout: 5m
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - revive
+    - gocritic
+    - gosec
+    - bodyclose
+    - noctx
+    - errorlint
+    - prealloc
+    - unparam
+    - nilerr
+    - forcetypeassert
+    - makezero
+    - exhaustive    # switch on enum covers all cases
+    - goconst       # repeated string literals → constants
+    - misspell      # typos in comments and strings
+    - testifylint   # testify best practices (since testify is mandated)
+linters-settings:
+  revive:
+    rules:
+      - name: context-as-argument
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: var-naming
+      - name: package-comments
+  exhaustive:
+    default-signifies-exhaustive: true
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  testifylint:
+    enable-all: true
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

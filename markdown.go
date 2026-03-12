@@ -1,3 +1,4 @@
+// Package main provides the core functionality for updating GitHub star counts in Markdown and AsciiDoc files.
 package main
 
 import (
@@ -6,18 +7,21 @@ import (
 	"strings"
 )
 
+// MarkdownUpdater implements LinkUpdater for Markdown files.
 type MarkdownUpdater struct{}
 
+// FindRepos finds all GitHub repository links in the given content.
 func (m *MarkdownUpdater) FindRepos(content string) ([]string, error) {
 	re := regexp.MustCompile(`\[([^\]]+)\]\((https:\/\/github\.com\/[^\/)]+\/[^\/)]+)\)`)
 	matches := re.FindAllStringSubmatch(content, -1)
-	var repos []string
+	repos := make([]string, 0, len(matches))
 	for _, match := range matches {
 		repos = append(repos, match[2])
 	}
 	return repos, nil
 }
 
+// UpdateContent updates the content by injecting star counts using the provided map.
 func (m *MarkdownUpdater) UpdateContent(content string, stars map[string]int) (string, error) {
 	re := regexp.MustCompile(`\[([^\]]+)\]\((https:\/\/github\.com\/[^\/)]+\/[^\/)]+)\)`)
 	matches := re.FindAllStringSubmatch(content, -1)
