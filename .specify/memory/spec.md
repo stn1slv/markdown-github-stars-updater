@@ -1,7 +1,7 @@
 # Project Specification: GitHub Stars Updater
 
 **Status**: Consolidated
-**Last Updated**: 2026-02-05
+**Last Updated**: 2026-03-12
 **Input**: Combined from `001-initial-release` and `002-asciidoc-support`
 
 ## User Scenarios
@@ -18,17 +18,17 @@ As a user, I want to preview changes without modifying the file (Dry Run) or sav
 ## Requirements
 
 ### Functional Requirements
-- **FR-001 (Multi-Format Support)**: The system MUST support both Markdown (`.md`, `.markdown`) and AsciiDoc (`.adoc`, `.asciidoc`) files.
+- **FR-001 (Multi-Format Support)**: The system MUST support both Markdown (`.md`, `.markdown`) and AsciiDoc (`.adoc`, `.asciidoc`) files. [Source: `specs/002-asciidoc-support`]
 - **FR-002 (Link Detection)**: 
-    - **Markdown**: Identify links in `[Title](https://github.com/owner/repo)` format.
-    - **AsciiDoc**: Identify links in `link:https://github.com/owner/repo[Title]` and `https://github.com/owner/repo[Title]` formats.
-- **FR-003 (Star Fetching)**: The system MUST fetch stargazer counts for identified repositories using the GitHub API via an authenticated client (`GITHUB_TOKEN`).
-- **FR-004 (Star Formatting)**: The system MUST format star counts consistently:
+    - **Markdown**: Identify links in `[Title](https://github.com/owner/repo)` format. [Source: `specs/001-initial-release`]
+    - **AsciiDoc**: Identify links in `link:https://github.com/owner/repo[Title]` and `https://github.com/owner/repo[Title]` formats. [Source: `specs/002-asciidoc-support`]
+- **FR-003 (Star Fetching)**: The system MUST fetch stargazer counts for identified repositories using the GitHub API via an authenticated client (`GITHUB_TOKEN`). [Source: `specs/001-initial-release`]
+- **FR-004 (Star Formatting)**: The system MUST format star counts consistently: [Source: `specs/001-initial-release`]
     - Exact count for < 1,000 (e.g., `350`).
     - `X.Yk` for 1,000-9,999 (e.g., `1.2k`).
     - `Xk` for >= 10,000 (e.g., `12k`).
-- **FR-005 (In-Place Injection)**: The system MUST inject the formatted star count (e.g., `(⭐1.2k)`) into the existing link text.
-- **FR-006 (Safety Flags)**: 
+- **FR-005 (In-Place Injection)**: The system MUST inject the formatted star count (e.g., `(⭐1.2k)`) into the existing link text. [Source: `specs/001-initial-release`]
+- **FR-006 (Safety Flags)**: [Source: `specs/001-initial-release`]
     - `-dry-run`: Print updated content to stdout without modifying files.
     - `-out <path>`: Write output to a specific file instead of updating in-place.
 

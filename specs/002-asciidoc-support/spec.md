@@ -2,7 +2,7 @@
 
 **Feature Branch**: `002-asciidoc-support`
 **Created**: 2026-02-03
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "I want to add support of AsciiDocs. It should work exactly as markdown support."
 
 ## User Scenarios & Testing
