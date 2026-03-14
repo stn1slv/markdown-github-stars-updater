@@ -22,7 +22,7 @@ jobs:
       - name: Set up Go environment
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.26'
 
       - name: Lint
         run: |
@@ -49,7 +49,7 @@ jobs:
       - name: Set up Go environment
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25'
+          go-version: '1.26'
 
       - name: Build for Linux (AMD64)
         run: go build -v -o markdown-github-stars-updater-linux-amd64

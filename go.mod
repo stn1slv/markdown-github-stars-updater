@@ -1,6 +1,6 @@
 module github.com/stn1slv/github-markdown-stars-updater
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/google/go-github/v68 v68.0.0
