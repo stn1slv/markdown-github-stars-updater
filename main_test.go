@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 
 	"github.com/google/go-github/v68/github"
@@ -44,6 +43,7 @@ func TestRemoveStarsInfo(t *testing.T) {
 		{"Project1 (⭐1k)", "Project1"},
 		{"Project2 (⭐1.5k)", "Project2"},
 		{"Project3", "Project3"},
+		{"Project4 (⭐1k) (extra notes)", "Project4 (extra notes)"},
 	}
 
 	for _, test := range tests {
@@ -55,8 +55,7 @@ func TestRemoveStarsInfo(t *testing.T) {
 }
 
 func TestGetAccessToken(t *testing.T) {
-	oldToken := os.Getenv("GITHUB_TOKEN")
-	_ = os.Setenv("GITHUB_TOKEN", "test_token")
+	t.Setenv("GITHUB_TOKEN", "test_token")
 
 	token, err := getAccessToken()
 	if err != nil {
@@ -65,31 +64,134 @@ func TestGetAccessToken(t *testing.T) {
 	if token != "test_token" {
 		t.Errorf("Expected 'test_token', got '%s'", token)
 	}
-
-	_ = os.Setenv("GITHUB_TOKEN", oldToken)
 }
 
 func TestGetAccessTokenMissing(t *testing.T) {
-	oldToken := os.Getenv("GITHUB_TOKEN")
-	_ = os.Unsetenv("GITHUB_TOKEN")
+	t.Setenv("GITHUB_TOKEN", "")
 
 	_, err := getAccessToken()
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-
-	_ = os.Setenv("GITHUB_TOKEN", oldToken)
 }
 
 func TestParseRepoName(t *testing.T) {
-	owner, repo := parseRepoName("google/go-github")
-	if owner != "google" || repo != "go-github" {
-		t.Errorf("Expected google and go-github, got %s and %s", owner, repo)
+	tests := []struct {
+		name      string
+		input     string
+		wantOwner string
+		wantRepo  string
+		wantErr   bool
+	}{
+		{
+			name:      "Simple owner/repo",
+			input:     "google/go-github",
+			wantOwner: "google",
+			wantRepo:  "go-github",
+		},
+		{
+			name:      "With trailing path segments",
+			input:     "owner/repo/tree/main",
+			wantOwner: "owner",
+			wantRepo:  "repo",
+		},
+		{
+			name:    "Single segment",
+			input:   "owner",
+			wantErr: true,
+		},
+		{
+			name:    "Empty string",
+			input:   "",
+			wantErr: true,
+		},
+		{
+			name:    "Missing repo",
+			input:   "owner/",
+			wantErr: true,
+		},
+		{
+			name:    "Missing owner",
+			input:   "/repo",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			owner, repo, err := parseRepoName(tt.input)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("expected error for input %q, got nil", tt.input)
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if owner != tt.wantOwner || repo != tt.wantRepo {
+				t.Errorf("expected (%s, %s), got (%s, %s)", tt.wantOwner, tt.wantRepo, owner, repo)
+			}
+		})
 	}
 }
 
-// Helper to simulate the update flow for tests
+func TestMarkdownFindRepos(t *testing.T) {
+	tests := []struct {
+		name     string
+		content  string
+		expected []string
+	}{
+		{
+			name:     "Single link",
+			content:  "- [Project](https://github.com/owner/repo)",
+			expected: []string{"https://github.com/owner/repo"},
+		},
+		{
+			name:     "Multiple links",
+			content:  "[A](https://github.com/a/b) and [B](https://github.com/c/d)",
+			expected: []string{"https://github.com/a/b", "https://github.com/c/d"},
+		},
+		{
+			name:     "Link with existing stars",
+			content:  "[Repo (⭐100)](https://github.com/owner/repo)",
+			expected: []string{"https://github.com/owner/repo"},
+		},
+		{
+			name:     "Non-GitHub link ignored",
+			content:  "[Docs](https://docs.example.com/guide)",
+			expected: []string{},
+		},
+		{
+			name:     "No links",
+			content:  "Just some text without links.",
+			expected: []string{},
+		},
+	}
+
+	updater := &MarkdownUpdater{}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := updater.FindRepos(tt.content)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if len(got) != len(tt.expected) {
+				t.Fatalf("expected %v, got %v", tt.expected, got)
+			}
+			for i := range got {
+				if got[i] != tt.expected[i] {
+					t.Errorf("index %d: expected %q, got %q", i, tt.expected[i], got[i])
+				}
+			}
+		})
+	}
+}
+
+// Helper to simulate the update flow for tests.
 func runUpdateFlow(t *testing.T, content string, client *github.Client, updater LinkUpdater) string {
+	t.Helper()
+
 	repos, err := updater.FindRepos(content)
 	if err != nil {
 		t.Fatalf("FindRepos failed: %v", err)
@@ -98,9 +200,9 @@ func runUpdateFlow(t *testing.T, content string, client *github.Client, updater 
 	stars := make(map[string]int)
 	ctx := context.Background()
 	for _, repoURL := range repos {
-		count, err := getStarsCount(ctx, client, repoURL)
-		if err != nil {
-			t.Fatalf("getStarsCount failed for %s: %v", repoURL, err)
+		count, fetchErr := getStarsCount(ctx, client, repoURL)
+		if fetchErr != nil {
+			t.Fatalf("getStarsCount failed for %s: %v", repoURL, fetchErr)
 		}
 		stars[repoURL] = count
 	}
@@ -114,7 +216,7 @@ func runUpdateFlow(t *testing.T, content string, client *github.Client, updater 
 
 func TestUpdateStarCounts(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/repos/testowner/testrepo", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/repos/testowner/testrepo", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprint(w, `{"stargazers_count": 42}`)
 	})
@@ -136,11 +238,11 @@ func TestUpdateStarCounts(t *testing.T) {
 
 func TestUpdateStarCountsMultiple(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/repos/owner/repo1", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/repos/owner/repo1", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprint(w, `{"stargazers_count": 1}`)
 	})
-	mux.HandleFunc("/repos/owner/repo2", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/repos/owner/repo2", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprint(w, `{"stargazers_count": 2}`)
 	})
@@ -162,7 +264,7 @@ func TestUpdateStarCountsMultiple(t *testing.T) {
 
 func TestUpdateStarCountsExistingStars(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/repos/owner/repo", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/repos/owner/repo", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprint(w, `{"stargazers_count": 10}`)
 	})
@@ -184,7 +286,7 @@ func TestUpdateStarCountsExistingStars(t *testing.T) {
 
 func TestUpdateStarCountsAsciiDoc(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/repos/testowner/adoc-repo", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/repos/testowner/adoc-repo", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = fmt.Fprint(w, `{"stargazers_count": 99}`)
 	})

@@ -16,12 +16,15 @@ type LinkUpdater interface {
 	UpdateContent(content string, stars map[string]int) (string, error)
 }
 
+var (
+	starsInfoRe  = regexp.MustCompile(`\s*\(⭐[^)]*\)`)
+	multiSpaceRe = regexp.MustCompile(`\s{2,}`)
+)
+
 // removeStarsInfo removes the existing star count information from the input string.
 func removeStarsInfo(input string) string {
-	// Create a regular expression to find the "(⭐...)" pattern
-	re := regexp.MustCompile(`\(⭐.*\)`)
-	// Replace the matched substrings with an empty string
-	result := re.ReplaceAllString(input, "")
+	result := starsInfoRe.ReplaceAllString(input, "")
+	result = multiSpaceRe.ReplaceAllString(result, " ")
 	return strings.TrimSpace(result)
 }
 

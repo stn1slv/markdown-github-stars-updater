@@ -2,7 +2,7 @@
 package main
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -46,7 +46,7 @@ func TestAsciiDocFindRepos(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if !reflect.DeepEqual(got, tt.expected) {
+			if !slices.Equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
 			}
 		})

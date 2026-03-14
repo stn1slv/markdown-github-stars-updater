@@ -7,16 +7,14 @@ import (
 	"strings"
 )
 
+var asciidocLinkRe = regexp.MustCompile(`(?:link:)?(https://github\.com/[^/\[]+/[^/\[]+)\[([^\]]*)\]`)
+
 // ASCIIDocUpdater implements LinkUpdater for AsciiDoc files.
 type ASCIIDocUpdater struct{}
 
 // FindRepos finds all GitHub repository links in the given content.
 func (a *ASCIIDocUpdater) FindRepos(content string) ([]string, error) {
-	// Pattern: (optional "link:") + (https://github.com/...) + [Text]
-	// Group 1: URL
-	// Group 2: Text (unused here but part of the structure)
-	re := regexp.MustCompile(`(?:link:)?(https://github\.com/[^\[]+)\[([^\]]*)\]`)
-	matches := re.FindAllStringSubmatch(content, -1)
+	matches := asciidocLinkRe.FindAllStringSubmatch(content, -1)
 
 	repos := make([]string, 0, len(matches))
 	for _, match := range matches {
@@ -27,8 +25,7 @@ func (a *ASCIIDocUpdater) FindRepos(content string) ([]string, error) {
 
 // UpdateContent updates the content by injecting star counts using the provided map.
 func (a *ASCIIDocUpdater) UpdateContent(content string, stars map[string]int) (string, error) {
-	re := regexp.MustCompile(`(?:link:)?(https://github\.com/[^\[]+)\[([^\]]*)\]`)
-	matches := re.FindAllStringSubmatch(content, -1)
+	matches := asciidocLinkRe.FindAllStringSubmatch(content, -1)
 
 	for _, match := range matches {
 		fullMatch := match[0]
@@ -40,8 +37,6 @@ func (a *ASCIIDocUpdater) UpdateContent(content string, stars map[string]int) (s
 			continue
 		}
 
-		// Reconstruct the link with updated stars
-		// We need to preserve the "link:" prefix if it was there
 		prefix := ""
 		if strings.HasPrefix(fullMatch, "link:") {
 			prefix = "link:"
