@@ -115,6 +115,24 @@ func TestParseRepoName(t *testing.T) {
 			input:   "/repo",
 			wantErr: true,
 		},
+		{
+			name:      "With query string",
+			input:     "owner/repo?tab=readme",
+			wantOwner: "owner",
+			wantRepo:  "repo",
+		},
+		{
+			name:      "With fragment",
+			input:     "owner/repo#installation",
+			wantOwner: "owner",
+			wantRepo:  "repo",
+		},
+		{
+			name:      "With trailing path and query",
+			input:     "owner/repo/tree/main?file=README.md",
+			wantOwner: "owner",
+			wantRepo:  "repo",
+		},
 	}
 
 	for _, tt := range tests {

@@ -142,8 +142,13 @@ func getStarsCount(ctx context.Context, client *github.Client, repoURL string) (
 	return repository.GetStargazersCount(), nil
 }
 
-// parseRepoName takes a path like "owner/repo" (possibly with trailing segments) and returns the owner and repo parts.
+// parseRepoName takes a path like "owner/repo" (possibly with trailing segments, query strings, or fragments)
+// and returns the owner and repo parts.
 func parseRepoName(repoPath string) (string, string, error) {
+	// Strip query string (?...) and fragment (#...) before splitting
+	if idx := strings.IndexAny(repoPath, "?#"); idx != -1 {
+		repoPath = repoPath[:idx]
+	}
 	parts := strings.SplitN(repoPath, "/", 3) //nolint:mnd
 	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
 		return "", "", fmt.Errorf("invalid repository path: %q", repoPath)
