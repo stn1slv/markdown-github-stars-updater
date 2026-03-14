@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -145,13 +146,17 @@ func getStarsCount(ctx context.Context, client *github.Client, repoURL string) (
 // parseRepoName takes a path like "owner/repo" (possibly with trailing segments, query strings, or fragments)
 // and returns the owner and repo parts.
 func parseRepoName(repoPath string) (string, string, error) {
-	// Strip query string (?...) and fragment (#...) before splitting
-	if idx := strings.IndexAny(repoPath, "?#"); idx != -1 {
-		repoPath = repoPath[:idx]
+	// Use net/url to correctly parse query parameters and fragments
+	u, err := url.Parse(repoPath)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse repository path: %w", err)
 	}
-	parts := strings.SplitN(repoPath, "/", 3) //nolint:mnd
+
+	// We only care about the path part of the URL
+	path := strings.TrimPrefix(u.Path, "/")
+	parts := strings.SplitN(path, "/", 3) //nolint:mnd
 	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
-		return "", "", fmt.Errorf("invalid repository path: %q", repoPath)
+		return "", "", fmt.Errorf("invalid repository path: %q", path)
 	}
 	return parts[0], parts[1], nil
 }
