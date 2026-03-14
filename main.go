@@ -6,6 +6,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,8 @@ import (
 	"github.com/google/go-github/v68/github"
 	"golang.org/x/oauth2"
 )
+
+const githubURLPrefix = "https://github.com/"
 
 var version = "dev"
 
@@ -28,24 +31,24 @@ func main() {
 	}
 
 	if flag.NArg() < 1 {
-		fmt.Println("Usage: markdown-github-stars-updater [flags] <path_to_file>")
+		fmt.Fprintln(os.Stderr, "Usage: markdown-github-stars-updater [flags] <path_to_file>")
 		flag.PrintDefaults()
-		return
+		os.Exit(1)
 	}
 
 	filePath := flag.Arg(0)
 
 	contentBytes, err := os.ReadFile(filepath.Clean(filePath))
 	if err != nil {
-		fmt.Println("Error reading the file:", err)
-		return
+		fmt.Fprintln(os.Stderr, "Error reading the file:", err)
+		os.Exit(1)
 	}
 	content := string(contentBytes)
 
 	token, err := getAccessToken()
 	if err != nil {
-		fmt.Println("Error:", err)
-		return
+		fmt.Fprintln(os.Stderr, "Error:", err)
+		os.Exit(1)
 	}
 
 	client := newGitHubClient(token)
@@ -67,15 +70,15 @@ func main() {
 		// but explicit support for asciidoc is added.
 		// Let's print a warning and default to markdown for now, or just fail.
 		// Failing is safer to avoid corrupting other files.
-		fmt.Printf("Unsupported file extension: %s. Supported: .md, .markdown, .adoc, .asciidoc\n", ext)
-		return
+		fmt.Fprintf(os.Stderr, "Unsupported file extension: %s. Supported: .md, .markdown, .adoc, .asciidoc\n", ext)
+		os.Exit(1)
 	}
 
 	// 1. Find Repos
 	repos, err := updater.FindRepos(content)
 	if err != nil {
-		fmt.Println("Error finding repositories:", err)
-		return
+		fmt.Fprintln(os.Stderr, "Error finding repositories:", err)
+		os.Exit(1)
 	}
 
 	// 2. Fetch Stars
@@ -85,9 +88,9 @@ func main() {
 		if _, exists := stars[repoURL]; exists {
 			continue
 		}
-		count, err := getStarsCount(ctx, client, repoURL)
-		if err != nil {
-			fmt.Printf("Warning: Could not fetch stars for %s: %v\n", repoURL, err)
+		count, fetchErr := getStarsCount(ctx, client, repoURL)
+		if fetchErr != nil {
+			fmt.Fprintf(os.Stderr, "Warning: Could not fetch stars for %s: %v\n", repoURL, fetchErr)
 			continue
 		}
 		stars[repoURL] = count
@@ -96,8 +99,8 @@ func main() {
 	// 3. Update Content
 	updatedContent, err := updater.UpdateContent(content, stars)
 	if err != nil {
-		fmt.Println("Error updating content:", err)
-		return
+		fmt.Fprintln(os.Stderr, "Error updating content:", err)
+		os.Exit(1)
 	}
 
 	if *dryRun {
@@ -114,16 +117,24 @@ func main() {
 	// We use 0644 because this is a documentation tool and the files are usually public/shared.
 	err = os.WriteFile(output, []byte(updatedContent), 0o644) //nolint:gosec
 	if err != nil {
-		fmt.Println("Error writing updated file:", err)
-		return
+		fmt.Fprintln(os.Stderr, "Error writing updated file:", err)
+		os.Exit(1)
 	}
 
 	fmt.Println("File updated successfully.")
 }
 
-// getStarsCount takes a GitHub repository URL and returns the current number of stars
+// getStarsCount takes a GitHub repository URL and returns the current number of stars.
 func getStarsCount(ctx context.Context, client *github.Client, repoURL string) (int, error) {
-	owner, repo := parseRepoName(repoURL[len("https://github.com/"):])
+	if !strings.HasPrefix(repoURL, githubURLPrefix) {
+		return 0, fmt.Errorf("invalid GitHub URL: %s", repoURL)
+	}
+
+	owner, repo, err := parseRepoName(repoURL[len(githubURLPrefix):])
+	if err != nil {
+		return 0, err
+	}
+
 	repository, _, err := client.Repositories.Get(ctx, owner, repo)
 	if err != nil {
 		return 0, err
@@ -132,13 +143,22 @@ func getStarsCount(ctx context.Context, client *github.Client, repoURL string) (
 	return repository.GetStargazersCount(), nil
 }
 
-// parseRepoName takes a GitHub repository name (formatted as "owner/repo") and returns the owner and repo parts.
-func parseRepoName(repoName string) (string, string) {
-	parts := strings.Split(repoName, "/")
-	if len(parts) != 2 {
-		panic("Invalid repository name format")
+// parseRepoName takes a path like "owner/repo" (possibly with trailing segments, query strings, or fragments)
+// and returns the owner and repo parts.
+func parseRepoName(repoPath string) (string, string, error) {
+	// Use net/url to correctly parse query parameters and fragments
+	u, err := url.Parse(repoPath)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to parse repository path: %w", err)
 	}
-	return parts[0], parts[1]
+
+	// We only care about the path part of the URL
+	path := strings.TrimPrefix(u.Path, "/")
+	parts := strings.SplitN(path, "/", 3) //nolint:mnd
+	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("invalid repository path: %q", path)
+	}
+	return parts[0], parts[1], nil
 }
 
 // getAccessToken retrieves the GitHub access token from the environment variable

@@ -2,7 +2,7 @@
 package main
 
 import (
-	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -33,6 +33,16 @@ func TestAsciiDocFindRepos(t *testing.T) {
 			expected: []string{"https://github.com/owner/repo"},
 		},
 		{
+			name:     "Link with trailing path segments",
+			content:  "link:https://github.com/owner/repo/tree/main[Browse Source]",
+			expected: []string{"https://github.com/owner/repo/tree/main"},
+		},
+		{
+			name:     "Link to issues page",
+			content:  "https://github.com/owner/repo/issues[Issues]",
+			expected: []string{"https://github.com/owner/repo/issues"},
+		},
+		{
 			name:     "No links",
 			content:  "Just some text without links.",
 			expected: []string{},
@@ -46,7 +56,7 @@ func TestAsciiDocFindRepos(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
-			if !reflect.DeepEqual(got, tt.expected) {
+			if !slices.Equal(got, tt.expected) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
 			}
 		})
@@ -83,6 +93,12 @@ func TestAsciiDocUpdateContent(t *testing.T) {
 			content:  "link:https://github.com/a/b[A] and https://github.com/c/d[B]",
 			stars:    map[string]int{"https://github.com/a/b": 10, "https://github.com/c/d": 20},
 			expected: "link:https://github.com/a/b[A (⭐10)] and https://github.com/c/d[B (⭐20)]",
+		},
+		{
+			name:     "Update link with trailing path",
+			content:  "link:https://github.com/owner/repo/tree/main[Source]",
+			stars:    map[string]int{"https://github.com/owner/repo/tree/main": 42},
+			expected: "link:https://github.com/owner/repo/tree/main[Source (⭐42)]",
 		},
 	}
 
