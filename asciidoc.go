@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var asciidocLinkRe = regexp.MustCompile(`(?:link:)?(https://github\.com/[^/\[]+/[^/\[]+)\[([^\]]*)\]`)
+var asciidocLinkRe = regexp.MustCompile(`(?:link:)?(https://github\.com/[^/\[]+/[^\[]+)\[([^\]]*)\]`)
 
 // ASCIIDocUpdater implements LinkUpdater for AsciiDoc files.
 type ASCIIDocUpdater struct{}
