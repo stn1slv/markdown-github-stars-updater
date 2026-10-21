@@ -2,6 +2,8 @@ module github.com/stn1slv/github-markdown-stars-updater
 
 go 1.26.0
 
+toolchain go1.26.10
+
 require (
 	github.com/google/go-github/v68 v68.0.0
 	golang.org/x/oauth2 v0.37.0
